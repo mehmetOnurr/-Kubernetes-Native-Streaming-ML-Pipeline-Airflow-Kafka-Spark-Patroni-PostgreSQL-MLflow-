@@ -1,0 +1,35 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  - role: control-plane
+    kubeadmConfigPatches:
+      - |
+        kind: InitConfiguration
+        nodeRegistration:
+          taints:
+            - key: "node-role.kubernetes.io/control-plane"
+              effect: "NoSchedule"
+    extraPortMappings:
+      - containerPort: 80     # Ingress için
+        hostPort: 80
+      - containerPort: 30080  # Spark UI
+        hostPort: 30080
+      - containerPort: 30500  # MLflow UI
+        hostPort: 30500
+      - containerPort: 30092  # Kafka
+        hostPort: 30092
+      - containerPort: 32000  # PostgreSQL (opsiyonel)
+        hostPort: 32000
+
+  - role: worker
+    extraMounts:
+      - hostPath: /mnt/d/codes/interview/csv_files/worker1
+        containerPath: /data
+  - role: worker
+    extraMounts:
+      - hostPath: /mnt/d/codes/interview/csv_files/worker2
+        containerPath: /data
+  - role: worker
+    extraMounts:
+      - hostPath: /mnt/d/codes/interview/csv_files/worker3
+        containerPath: /data

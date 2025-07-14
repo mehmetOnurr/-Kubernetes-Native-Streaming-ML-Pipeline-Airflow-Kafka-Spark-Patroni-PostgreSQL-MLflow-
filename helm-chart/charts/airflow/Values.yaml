@@ -1,0 +1,38 @@
+image:
+  repository: apache/airflow
+  tag: 2.9.0
+
+executor: LocalExecutor
+dags:
+  path: /opt/airflow/dags
+  persistence:
+    enabled: true
+    existingClaim: airflow-pvc  # DAG klasörünü buradan mount edeceğiz
+
+airflow:
+  username: airflow
+  password: airflow
+  fernetKey: "TwWmccqREvL9sbvYylCYY6zuxNZc2CuiRepTyz982bs="   
+  secretKey: "aL6TuCeTkzhXCpZANjx6KtrvGlcrSSFCHeIjaOzhpqz5LtgKXT" 
+  webserverPort: 8080
+
+postgresql:
+  enabled: false  # Biz kendi Patroni yapımızı kullanacağız
+  host: patroni.default.svc.cluster.local
+  port: 5432
+  db: airflow
+  user: airflow
+  passwordSecret: airflow-postgres-secret
+
+ingress:
+  enabled: true
+  host: airflow.local
+
+gitSync:
+  enabled: true
+  repo: https://github.com/mehmetOnurrr/airflow-dags.git
+  branch: main
+  depth: 1
+  wait: 10
+  root: /git
+  dest: repo

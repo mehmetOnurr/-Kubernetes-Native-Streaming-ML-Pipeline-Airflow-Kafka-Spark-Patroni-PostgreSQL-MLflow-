@@ -1,0 +1,16 @@
+image:
+  repository: wurstmeister/kafka
+  tag: 2.12-2.2.1
+
+zookeeper:
+  image: wurstmeister/zookeeper
+  tag: 3.4.6
+
+service:
+  type: NodePort
+  port: 9092
+  nodePort: 30092
+
+persistence:
+  enabled: true
+  existingClaim: kafka-pvc

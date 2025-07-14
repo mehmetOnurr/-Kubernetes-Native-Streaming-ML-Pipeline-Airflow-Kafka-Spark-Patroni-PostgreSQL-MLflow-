@@ -1,0 +1,22 @@
+apiVersion: v2
+name: airflow
+description: Apache Airflow - DAG orchestration for Spark, MLflow, Kafka, PostgreSQL
+version: 0.1.0
+
+
+dependencies:
+  - name: airflow
+    version: 0.1.0
+    repository: "file://charts/airflow"
+  - name: spark
+    version: 0.1.0
+    repository: "file://charts/spark"
+  - name: kafka
+    version: 0.1.0
+    repository: "file://charts/kafka"
+  - name: postgres
+    version: 0.1.0
+    repository: "file://charts/postgres"
+  - name: mlflow
+    version: 0.1.0
+    repository: "file://charts/mlflow"

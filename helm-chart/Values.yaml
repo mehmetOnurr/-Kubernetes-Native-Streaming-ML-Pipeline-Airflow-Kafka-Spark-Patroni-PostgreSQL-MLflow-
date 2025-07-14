@@ -1,0 +1,42 @@
+airflow:
+  auth:
+    username: airflow
+    password: airflow
+  postgresql:
+    enabled: true
+    postgresqlUsername: airflow
+    postgresqlPassword: airflow
+    postgresqlDatabase: airflow
+
+kafka:
+  zookeeper:
+    replicaCount: 1
+  replicaCount: 1
+  service:
+    port: 9092
+
+spark:
+  worker:
+    replicas: 2
+  service:
+    uiPort: 30080
+
+postgres:
+  enabled: true
+  postgresqlUsername: mlflow_user
+  postgresqlPassword: mlflow_pass
+  postgresqlDatabase: mlflow_db
+
+mlflow:
+  image:
+    repository: ghcr.io/mlflow/mlflow
+    tag: latest
+  postgres:
+    host: postgres.default.svc.cluster.local
+    port: 5432
+    user: mlflow_user
+    password: mlflow_pass
+    db: mlflow_db
+  ingress:
+    enabled: true
+    host: mlflow.local

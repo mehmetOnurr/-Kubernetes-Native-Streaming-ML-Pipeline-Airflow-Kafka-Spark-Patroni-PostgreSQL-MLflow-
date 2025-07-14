@@ -1,0 +1,23 @@
+replicaCount: 3
+
+patroni:
+  superuser:
+    username: postgres
+  replication:
+    username: replicator
+  admin:
+    username: admin
+
+persistence:
+  enabled: true
+  existingClaim: postgres-pvc
+
+
+service:
+  type: ClusterIP
+  port: 5432
+
+
+volume:
+  size: 1Gi
+

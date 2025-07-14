@@ -1,0 +1,34 @@
+image:
+  repository: bitnami/spark
+  tag: latest
+
+master:
+  port: 7077
+  uiPort: 8080
+
+worker:
+  replicas: 2
+  port: 8081
+  service:
+    type: NodePort
+    nodePort: 30081
+
+mlflow:
+  trackingUri: http://mlflow.default.svc.cluster.local:5000
+
+kafka:
+  bootstrapServers: kafka.default.svc.cluster.local:9092
+  topic: realtime-sales
+
+persistence:
+  sparkMasterClaim: spark-master-pvc
+  sparkWorkerClaim: spark-worker-pvc
+
+spark:
+  extraPackages: >
+    org.postgresql:postgresql:42.7.3,
+    org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0
+  extraConf: |
+    spark.sql.streaming.metricsEnabled=true
+    spark.eventLog.enabled=true
+    spark.eventLog.dir=s3a://spark-logs/

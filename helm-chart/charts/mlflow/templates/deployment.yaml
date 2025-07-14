@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlflow
+  labels:
+    app: mlflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mlflow
+  template:
+    metadata:
+      labels:
+        app: mlflow
+    spec:
+      containers:
+        - name: mlflow
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MLFLOW_TRACKING_URI
+              value: http://0.0.0.0:5000
+            - name: MLFLOW_BACKEND_STORE_URI
+              value: postgresql://{{ .Values.postgres.user }}:{{ .Values.postgres.password }}@{{ .Values.postgres.host }}:{{ .Values.postgres.port }}/{{ .Values.postgres.db }}
+            - name: ARTIFACT_ROOT
+              value: {{ .Values.persistence.mountPath }}
+          command: ["mlflow"]
+          args:
+            - server
+            - --backend-store-uri=$(MLFLOW_BACKEND_STORE_URI)
+            - --default-artifact-root=$(ARTIFACT_ROOT)
+            - --host=0.0.0.0
+            - --port=5000
+          ports:
+            - containerPort: 5000
+          volumeMounts:
+            - name: mlflow-pv
+              mountPath: {{ .Values.persistence.mountPath }}
+      volumes:
+        - name: mlflow-pv
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim }}

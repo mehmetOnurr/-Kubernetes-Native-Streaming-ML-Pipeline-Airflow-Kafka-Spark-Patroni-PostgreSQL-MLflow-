@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: patroni
+spec:
+  serviceName: patroni
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: patroni
+  template:
+    metadata:
+      labels:
+        app: patroni
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - airflow-spark-cluster-worker
+                      - airflow-spark-cluster-worker2
+      containers:
+        - name: patroni
+          image: registry.opensource.zalan.do/acid/spilo-15:2.1-p9
+          ports:
+            - containerPort: 5432
+            - containerPort: 8008
+          env:
+            - name: PATRONI_SCOPE
+              value: "pg-cluster"
+            - name: PATRONI_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: PATRONI_REST_API_LISTEN
+              value: "0.0.0.0:8008"
+            - name: PATRONI_REST_API_CONNECT_ADDRESS
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: PATRONI_POSTGRESQL_DATA_DIR
+              value: "/home/postgres/pgdata/pgroot/data"
+            - name: PATRONI_POSTGRESQL_PGPASS
+              value: "/tmp/pgpass"
+            - name: PATRONI_POSTGRESQL_AUTH_METHOD
+              value: "md5"
+            - name: PATRONI_POSTGRESQL_PARAMETERS
+              value: '{"wal_level":"replica", "hot_standby":"on"}'
+            - name: PATRONI_SUPERUSER_USERNAME
+              value: {{ .Values.patroni.superuser.username }}
+            - name: PATRONI_SUPERUSER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secrets
+                  key: POSTGRES_SUPERUSER_PASSWORD
+            - name: PATRONI_REPLICATION_USERNAME
+              value: {{ .Values.patroni.replication.username }}
+            - name: PATRONI_REPLICATION_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secrets
+                  key: POSTGRES_REPLICATION_PASSWORD
+            - name: PATRONI_ADMIN_USERNAME
+              value: {{ .Values.patroni.admin.username }}
+            - name: PATRONI_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secrets
+                  key: POSTGRES_ADMIN_PASSWORD
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /home/postgres/pgdata
+            - name: init-sql
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: init-sql
+          configMap:
+            name: patroni-init-sql
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim }}

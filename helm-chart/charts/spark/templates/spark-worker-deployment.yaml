@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-worker
+spec:
+  replicas: {{ .Values.worker.replicas }}
+  selector:
+    matchLabels:
+      app: spark
+      role: worker
+  template:
+    metadata:
+      labels:
+        app: spark
+        role: worker
+    spec:
+      containers:
+        - name: spark-worker
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          command: ["/opt/bitnami/scripts/spark/entrypoint.sh"]
+          args:
+            - "/run.sh"
+            - "spark-class"
+            - "org.apache.spark.deploy.worker.Worker"
+            - "spark://spark-master:{{ .Values.master.port }}"
+            - "--conf"
+            - "spark.jars.packages={{ .Values.spark.extraPackages }}"
+            {{- range $line := (splitList "\n" .Values.spark.extraConf) }}
+            - "--conf"
+            - "{{ $line }}"
+            {{- end }}
+          ports:
+            - containerPort: {{ .Values.worker.port }}
+          env:
+            - name: MLFLOW_TRACKING_URI
+              value: "{{ .Values.mlflow.trackingUri }}"
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "{{ .Values.kafka.bootstrapServers }}"
+            - name: KAFKA_TOPIC
+              value: "{{ .Values.kafka.topic }}"
+          volumeMounts:
+            - name: spark-worker-storage
+              mountPath: /opt/bitnami/spark/data
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.worker.port }}
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.worker.port }}
+            initialDelaySeconds: 15
+            periodSeconds: 10
+      volumes:
+        - name: spark-worker-storage
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.sparkWorkerClaim }}

@@ -1,0 +1,21 @@
+apiVersion: v2
+name: realtime-data-pipeline
+description: A modular Helm chart for Kafka, Spark, MLflow, PostgreSQL, and Airflow
+version: 0.1.0
+
+dependencies:
+  - name: spark
+    version: 0.1.0
+    repository: "file://charts/spark"
+  - name: kafka
+    version: 0.1.0
+    repository: "file://charts/kafka"
+  - name: mlflow
+    version: 0.1.0
+    repository: "file://charts/mlflow"
+  - name: airflow
+    version: 0.1.0
+    repository: "file://charts/airflow"
+  - name: patroni
+    version: 0.1.0
+    repository: "file://charts/postgres"

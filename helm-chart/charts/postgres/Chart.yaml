@@ -1,0 +1,4 @@
+apiVersion: v2
+name: postgres
+description: Highly available PostgreSQL cluster using Patroni
+version: 0.1.0

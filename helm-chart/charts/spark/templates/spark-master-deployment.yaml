@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-master
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spark
+      role: master
+  template:
+    metadata:
+      labels:
+        app: spark
+        role: master
+    spec:
+      containers:
+        - name: spark-master
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          command: ["/opt/bitnami/scripts/spark/entrypoint.sh"]
+          args: ["/run.sh", "spark-class", "org.apache.spark.deploy.master.Master"]
+          ports:
+            - containerPort: {{ .Values.master.port }}
+            - containerPort: {{ .Values.master.uiPort }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.master.uiPort }}
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.master.uiPort }}
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          volumeMounts:
+            - name: spark-master-storage
+              mountPath: /opt/bitnami/spark/data
+      volumes:
+        - name: spark-master-storage
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.sparkMasterClaim }}

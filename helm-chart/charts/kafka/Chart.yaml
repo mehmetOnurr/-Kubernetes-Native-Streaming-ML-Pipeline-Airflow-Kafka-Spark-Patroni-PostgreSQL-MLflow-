@@ -1,0 +1,4 @@
+apiVersion: v2
+name: kafka
+description: Kafka + Zookeeper broker
+version: 0.1.0
